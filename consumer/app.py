@@ -31,10 +31,10 @@ class RabbitMQConsumer:
         password = "carrot"
         port = 5672
 
-        # Retry connection a few times until RabbitMQ is ready
-        for attempt in range(1, 6):  # 5 attempts
+        # Keep retrying until RabbitMQ becomes available
+        while True:
             try:
-                print(f"[*] Connecting to RabbitMQ (attempt {attempt})...")
+                print("[*] Attempting to connect to RabbitMQ...")
 
                 self.connection = await aio_pika.connect_robust(
                     host=self.host,
@@ -42,17 +42,16 @@ class RabbitMQConsumer:
                     login=user,
                     password=password,
                 )
-                break  # success, exit the loop
+                break  # Connection succeeded, exit retry loop
 
             except Exception as e:
-                print(f"[!] Connection failed: {e}")
-                if attempt == 5:
-                    raise  # give up after final attempt
-                await asyncio.sleep(2)  # wait before retrying
+                print(f"[!] Connection failed: {e}. Retrying in 2 seconds...")
+                await asyncio.sleep(2)  # Wait before retrying
 
+        # Open a channel after connection is established
         self.channel = await self.connection.channel()
 
-        # Declare the queue
+        # Declare the queue (durable so it survives broker restarts)
         self.queue = await self.channel.declare_queue(
             self.queue_name,
             durable=True,
@@ -61,8 +60,10 @@ class RabbitMQConsumer:
         # Bind queue to an existing exchange by name, using routing key "new"
         await self.queue.bind(self.exchange_name, routing_key="new")
 
-        print("[*] Connected to RabbitMQ, bound to exchange "
-              f"'{self.exchange_name}' with routing key 'new'.")
+        print(
+            f"[*] Connected to RabbitMQ, bound to exchange "
+            f"'{self.exchange_name}' with routing key 'new'."
+        )
 
     async def start_consuming(self):
         """Start consuming messages asynchronously and process orders."""
