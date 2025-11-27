@@ -1,5 +1,6 @@
 import pika
 import json
+import time
 class RabbitMQPublisher:
     def __init__(self, host, exchange_name):
         self.host = host
@@ -12,8 +13,8 @@ class RabbitMQPublisher:
 
     def _connect(self):
         """Establish a connection to RabbitMQ and declare the exchange."""
-        user="sarai"
-        password="carrot"
+        user = "sarai"
+        password = "carrot"
         port = 5672
 
         credentials = pika.PlainCredentials(user, password)
@@ -22,15 +23,27 @@ class RabbitMQPublisher:
             port=port,
             credentials=credentials
         )
-        self.connection = pika.BlockingConnection(parameters)
 
-        self.channel = self.connection.channel()
+        while True:
+            try:
+                print("[Producer] Trying to connect to RabbitMQ...")
 
-        self.channel.exchange_declare(
-            exchange=self.exchange_name,
-            exchange_type="direct",
-            durable=True
-        )
+                self.connection = pika.BlockingConnection(parameters)
+                self.channel = self.connection.channel()
+
+                # declare exchange once connected
+                self.channel.exchange_declare(
+                    exchange=self.exchange_name,
+                    exchange_type="direct",
+                    durable=True
+                )
+
+                print("[Producer] Connected and declared exchange.")
+                break  # success
+
+            except pika.exceptions.AMQPConnectionError as e:
+                print(f"[Producer] RabbitMQ not ready yet, retrying in 2 seconds... ({e})")
+                time.sleep(2)
 
     def publish(self, message: dict):
         """Publish a message to the RabbitMQ exchange."""

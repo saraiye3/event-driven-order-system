@@ -6,16 +6,10 @@ import os
 
 app = Flask(__name__)
 
-publisher = None
-
-def get_publisher():
-    global publisher
-    if publisher is None:
-        publisher = RabbitMQPublisher(
-            host=os.environ.get("RABBITMQ_HOST", "rabbitmq"),
-            exchange_name="orders-exchange"
-        )
-    return publisher
+publisher = RabbitMQPublisher(
+    host=os.environ.get("RABBITMQ_HOST", "rabbitmq"),
+    exchange_name="orders-exchange",
+)
 
 @app.route("/create-order", methods=["POST"])
 def create_new_order():
@@ -32,10 +26,8 @@ def create_new_order():
     """Generate order data."""
     order = OrderGenerator.generate_order(order_id, num_of_items)
 
-    pub = get_publisher()
-
     """Publish order to RabbitMQ."""
-    pub.publish(order)
+    publisher.publish(order)
 
     return jsonify(order), 201
 
