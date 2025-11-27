@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  consumer-service:
+    build: .
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: sarai
+      RABBITMQ_PASS: carrot
+    ports:
+      - "5001:5001"
+    networks:
+      - eda-net
+
+networks:
+  eda-net:
+    external: true

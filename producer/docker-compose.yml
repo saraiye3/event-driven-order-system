@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: sarai
+      RABBITMQ_DEFAULT_PASS: carrot
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - eda-net
+
+  producer-service:
+    build: .
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: sarai
+      RABBITMQ_PASS: carrot
+    ports:
+      - "5000:5000"
+    depends_on:
+      - rabbitmq
+    networks:
+      - eda-net
+
+networks:
+  eda-net:
+    name: eda-net
