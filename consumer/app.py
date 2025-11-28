@@ -1,135 +1,32 @@
 import asyncio
-import json
-import aio_pika
-from quart import Quart, request, jsonify
+from quart import Quart
 import os
+from rabbitmq_consumer import RabbitMQConsumer
+from order_processor import OrderProcessor
+from web_api import register_routes
 
-# ============================
-# Global in-memory store
-# ============================
-
-orders = {}  # key: orderId, value: order dict
-
-
-# ============================
-# Async RabbitMQ Consumer
-# ============================
-
-class RabbitMQConsumer:
-    def __init__(self, host, exchange_name, queue_name):
-        self.host = host
-        self.exchange_name = exchange_name  # just the name as string
-        self.queue_name = queue_name
-
-        self.connection = None
-        self.channel = None
-        self.queue = None
-
-    async def connect(self):
-        """Connect to RabbitMQ, declare queue, and bind it to existing exchange with routing key 'new'."""
-        user = "sarai"
-        password = "carrot"
-        port = 5672
-
-        # Keep retrying until RabbitMQ becomes available
-        while True:
-            try:
-                print("[*] Attempting to connect to RabbitMQ...")
-
-                self.connection = await aio_pika.connect_robust(
-                    host=self.host,
-                    port=port,
-                    login=user,
-                    password=password,
-                )
-                break  # Connection succeeded, exit retry loop
-
-            except Exception as e:
-                print(f"[!] Connection failed: {e}. Retrying in 2 seconds...")
-                await asyncio.sleep(2)  # Wait before retrying
-
-        # Open a channel after connection is established
-        self.channel = await self.connection.channel()
-
-        # Declare the queue (durable so it survives broker restarts)
-        self.queue = await self.channel.declare_queue(
-            self.queue_name,
-            durable=True,
-        )
-
-        # Bind queue to an existing exchange by name, using routing key "new"
-        await self.queue.bind(self.exchange_name, routing_key="new")
-
-        print(
-            f"[*] Connected to RabbitMQ, bound to exchange "
-            f"'{self.exchange_name}' with routing key 'new'."
-        )
-
-    async def start_consuming(self):
-        """Start consuming messages asynchronously and process orders."""
-        if self.queue is None:
-            raise RuntimeError("You must call connect() before start_consuming().")
-
-        async with self.queue.iterator() as queue_iter:
-            async for message in queue_iter:
-                async with message.process():  # auto-ack if succeeds or nack if exception
-                    body = message.body.decode("utf-8")
-                    print(f"[x] Received raw message: {body}")
-
-                    try:
-                        order = json.loads(body)
-                    except json.JSONDecodeError:
-                        print("[!] Invalid JSON, skipping")
-                        continue
-
-                    total_amount = order.get("totalAmount", 0)
-                    shipping_cost = round((total_amount * 0.02), 2)
-                    order["shippingCost"] = shipping_cost
-
-                    order_id = order.get("orderId")
-                    if order_id:
-                        orders[order_id] = order
-                        print(f"[+] Order processed and saved: {order}")
-                    else:
-                        print("[!] Missing orderId, order not saved")
-
-
-# ============================
-# Async API (Quart)
-# ============================
 
 app = Quart(__name__)
 
 
-@app.get("/order-details")
-async def get_order_details():
-    """Return stored order details by orderId."""
-    order_id = request.args.get("orderId")
-
-    if not order_id:
-        return jsonify({"error": "orderId is required"}), 400
-
-    order = orders.get(order_id)
-
-    if order is None:
-        return jsonify({"error": "Order not found"}), 404
-
-    return jsonify(order), 200
-
-
-# ============================
-# Main: Start Consumer + API
-# ============================
-
 async def main():
     rabbit_host = os.environ.get("RABBITMQ_HOST", "rabbitmq")
 
+    # Create one shared processor instance
+    order_processor = OrderProcessor()
+
+    # Register API routes and pass the shared processor
+    register_routes(app, order_processor)
+
+    # Set up RabbitMQ consumer
     consumer = RabbitMQConsumer(
         host=rabbit_host,
         exchange_name="orders-exchange",
         queue_name="orders-queue",
+        order_processor=order_processor,
     )
 
+    # Connect to RabbitMQ
     await consumer.connect()
 
     # background task for the async consumer
