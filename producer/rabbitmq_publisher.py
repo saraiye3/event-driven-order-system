@@ -1,6 +1,7 @@
 import pika
 import json
 import time
+import os
 
 
 class RabbitMQPublisher:
@@ -15,15 +16,16 @@ class RabbitMQPublisher:
 
     def _connect(self):
         """Establish a connection to RabbitMQ and declare the exchange."""
-        user = "sarai"
-        password = "carrot"
+        user = os.environ.get("RABBITMQ_USER", "sarai")
+        password = os.environ.get("RABBITMQ_PASS", "carrot")
         port = 5672
 
         credentials = pika.PlainCredentials(user, password)
         parameters = pika.ConnectionParameters(
             host=self.host,
             port=port,
-            credentials=credentials
+            credentials=credentials,
+            heartbeat=30
         )
 
         while True:

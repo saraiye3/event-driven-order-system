@@ -1,6 +1,7 @@
 import asyncio
 import json
 import aio_pika
+import os
 
 
 class RabbitMQConsumer:
@@ -16,8 +17,8 @@ class RabbitMQConsumer:
 
     async def connect(self):
         """Connect to RabbitMQ, declare queue, and bind it to existing exchange with routing key 'new'."""
-        user = "sarai"
-        password = "carrot"
+        user = os.environ.get("RABBITMQ_USER", "sarai")
+        password = os.environ.get("RABBITMQ_PASS", "carrot")
         port = 5672
 
         # Keep retrying until RabbitMQ becomes available
@@ -30,6 +31,7 @@ class RabbitMQConsumer:
                     port=port,
                     login=user,
                     password=password,
+                    heartbeat=30
                 )
                 break  # Connection succeeded, exit retry loop
 
