@@ -40,10 +40,10 @@ class RabbitMQConsumer:
         # Open a channel after connection is established
         self.channel = await self.connection.channel()
 
-        # Declare the queue (durable so it survives broker restarts)
+        # Declare the queue
         self.queue = await self.channel.declare_queue(
             self.queue_name,
-            durable=True,
+            durable=True
         )
 
         # Bind queue to an existing exchange by name, using routing key "new"

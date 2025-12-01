@@ -7,7 +7,7 @@ def register_routes(app, publisher):
 
     @app.route("/create-order", methods=["POST"])
     def create_new_order():
-        data = request.get_json()
+        data = request.get_json()  # Converts incoming JSON to a Python dictionary
 
         order_id = data.get("orderId")
         num_of_items = data.get("numberOfItems")

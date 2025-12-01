@@ -7,7 +7,7 @@ from rabbitmq_publisher import RabbitMQPublisher
 def create_publisher():
     return RabbitMQPublisher(
         host=os.environ.get("RABBITMQ_HOST", "rabbitmq"),
-        exchange_name="orders-exchange",
+        exchange_name="orders-exchange"
     )
 
 

@@ -1,6 +1,8 @@
 import uuid
 from datetime import datetime
 import random
+
+
 class OrderGenerator:
     @staticmethod
     def generate_order(order_id, num_of_items):

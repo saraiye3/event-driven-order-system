@@ -1,6 +1,8 @@
 import pika
 import json
 import time
+
+
 class RabbitMQPublisher:
     def __init__(self, host, exchange_name):
         self.host = host
