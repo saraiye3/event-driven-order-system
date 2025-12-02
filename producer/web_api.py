@@ -3,6 +3,9 @@ from order_validator import OrderValidator
 from order_generator import OrderGenerator
 
 
+seen_order_ids = set()
+
+
 def register_routes(app, publisher):
 
     @app.route("/create-order", methods=["POST"])
@@ -15,6 +18,9 @@ def register_routes(app, publisher):
         error = OrderValidator.validate_input(order_id, num_of_items)
         if error is not None:
             return jsonify({"error": error}), 400
+
+        if order_id in seen_order_ids:
+            return jsonify({"error": "orderId already exists"}), 409
 
         # Generate order
         order = OrderGenerator.generate_order(order_id, num_of_items)
