@@ -3,11 +3,11 @@ from order_validator import OrderValidator
 from order_generator import OrderGenerator
 
 
-seen_order_ids = set()
-
-
 def register_routes(app, publisher):
 
+    # Seen order IDs for duplicate validation
+    seen_order_ids = set()
+    
     @app.route("/create-order", methods=["POST"])
     def create_new_order():
         data = request.get_json()  # Converts incoming JSON to a Python dictionary
