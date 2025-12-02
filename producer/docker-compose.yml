@@ -13,7 +13,7 @@ services:
       - eda-net
 
   producer-service:
-    build: .
+    image: sarai961/producer:latest
     environment:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: sarai

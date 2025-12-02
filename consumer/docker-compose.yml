@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   consumer-service:
-    build: .
+    image: sarai961/consumer:latest
     environment:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: sarai
