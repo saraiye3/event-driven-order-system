@@ -21,6 +21,7 @@ def register_routes(app, publisher):
 
         if order_id in seen_order_ids:
             return jsonify({"error": "orderId already exists"}), 409
+        seen_order_ids.add(order_id)
 
         # Generate order
         order = OrderGenerator.generate_order(order_id, num_of_items)
