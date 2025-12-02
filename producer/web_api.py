@@ -20,6 +20,9 @@ def register_routes(app, publisher):
         order = OrderGenerator.generate_order(order_id, num_of_items)
 
         # Publish to RabbitMQ
-        publisher.publish(order)
+        try:
+            publisher.publish(order)
+        except Exception as e:
+            return jsonify({"error": f"Failed to publish order: {str(e)}"}), 500
 
         return jsonify(order), 201

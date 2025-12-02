@@ -4,6 +4,12 @@ class OrderProcessor:
 
     def process_order(self, order):
         """Process and store the order."""
+
+        # Check for duplicate order
+        if order.get("orderId") in self.orders:
+            print(f"[!] Duplicate order received with ID: {order.get('orderId')}; ignoring.")
+            return
+
         self._calculate_shipping(order)
 
         order_id = order.get("orderId")

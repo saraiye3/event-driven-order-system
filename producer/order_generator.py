@@ -25,5 +25,5 @@ class OrderGenerator:
             "items": items,
             "totalAmount": total_amount,
             "currency": random.choice(["ILS", "USD", "EUR", "GBP"]),
-            "status": random.choice(["new", "confirmed", "delivered", "done"])
+            "status": "new"
         }
