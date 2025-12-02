@@ -48,8 +48,8 @@ class RabbitMQConsumer:
             durable=True
         )
 
-        # Bind queue to an existing exchange by name, using routing key "new"
-        await self.queue.bind(self.exchange_name, routing_key="new")
+        # Bind queue to an existing exchange by name, using routing key "order.new.#"
+        await self.queue.bind(self.exchange_name, routing_key="order.new.#")
 
         print(
             f"[*] Connected to RabbitMQ, bound to exchange "

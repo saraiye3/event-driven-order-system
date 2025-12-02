@@ -38,7 +38,7 @@ class RabbitMQPublisher:
                 # declare exchange once connected
                 self.channel.exchange_declare(
                     exchange=self.exchange_name,
-                    exchange_type="direct",
+                    exchange_type="topic",
                     durable=True
                 )
 
@@ -52,7 +52,8 @@ class RabbitMQPublisher:
     def publish(self, message: dict):
         """Publish a message to the RabbitMQ exchange."""
         body = json.dumps(message)  # Convert the message dictionary to a JSON string
-        routing_key = message.get("status", "unknown")
+        status = message.get("status", "unknown")
+        routing_key = f"order.{status}"
 
         try:  # added this part because after a while when no requests are sent the connection dies
             # first attempt
