@@ -7,6 +7,9 @@ class OrderGenerator:
     @staticmethod
     def generate_order(order_id, num_of_items):
         """Generate a sample order with given order_id and number of items."""
+
+        clean_id = str(order_id).strip()
+
         items = []
         for i in range(num_of_items):
             item = {
@@ -19,7 +22,7 @@ class OrderGenerator:
         total_amount = round(sum(item["quantity"] * item["price"] for item in items), 2)
 
         return {
-            "orderId": f"ORD-{order_id}",
+            "orderId": f"ORD-{clean_id}",
             "customerId": f"CUST-{random.randint(10000, 99999)}",
             "orderDate": datetime.utcnow().replace(second=0, microsecond=0).isoformat() + "Z",
             "items": items,
