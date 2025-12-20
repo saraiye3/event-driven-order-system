@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: sarai
+      RABBITMQ_DEFAULT_PASS: carrot
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - eda-net
+
+  producer-service:
+    image: sarai961/producer:latest
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: sarai
+      RABBITMQ_PASS: carrot
+
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: orders_db
+
+    ports:
+      - "5000:5000"
+    depends_on:
+      - rabbitmq
+    networks:
+      - eda-net
+
+networks:
+  eda-net:
+    external: true
