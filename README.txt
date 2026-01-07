@@ -1,7 +1,7 @@
 # Event-Driven Order System
 
 An event-driven order processing system built with Python, RabbitMQ and Docker.  
-The project includes two independent services (Producer and Consumer) that communicate through RabbitMQ using a direct exchange.
+The project includes two independent services (Producer and Consumer) that communicate through RabbitMQ using a topic exchange.
 
 ## Overview
 **Producer Service**  
