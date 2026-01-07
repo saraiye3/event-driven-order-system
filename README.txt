@@ -24,3 +24,7 @@ Listens for incoming order events, processes them asynchronously, calculates the
 
 ## Purpose
 This project demonstrates a simple but realistic event-driven architecture with microservices, asynchronous processing, message routing, and containerized deployment.
+
+## Run the Project
+Run the producer’s docker-compose first.
+The producer declares the RabbitMQ exchange, so the consumer should only be started after the producer and RabbitMQ are up.
