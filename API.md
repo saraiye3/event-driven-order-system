@@ -6,4 +6,4 @@
    
    method: GET
    
-   example: GET http://localhost:5001/order-details?orderId=ORD-14
+   example: GET http://localhost:5001/order-details?orderId=142
